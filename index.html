@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B2E4F">
+<title>Turni MPA – PROVA accessi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --navy:#0B2E4F;--navy-2:#164a78;--paper:#F4F1EA;--paper-2:#ebe5d8;--card:#fff;
+  --ink:#16222e;--muted:#5d6874;--faint:#8a929b;--line:#dcd4c4;
+  --ok:#1b7443;--ok-bg:#e3f2e8;--warn:#9a4d05;--warn-bg:#fcefd9;--bad:#b42318;--bad-bg:#fbe5e2;--test:#c2410c;
+  --f-display:"Bricolage Grotesque",Georgia,serif;--f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper-2);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #2f7de1;outline-offset:2px}
+#app{max-width:520px;margin:0 auto;min-height:100%;background:var(--paper);display:flex;flex-direction:column;position:relative}
+.testbar{background:var(--test);color:#fff;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:calc(5px + env(safe-area-inset-top,0px)) 12px 5px}
+.screen{flex:1;display:flex;flex-direction:column}
+.pad{padding:18px max(18px,env(safe-area-inset-left,0px)) 18px max(18px,env(safe-area-inset-right,0px))}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:42px;height:42px;border-radius:12px;background:var(--navy);color:var(--paper);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:15px;flex:none}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.h{font-family:var(--f-display);font-weight:800;color:var(--navy);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.h.xl{font-size:30px;line-height:1.05}.h.l{font-size:22px}.h.m{font-size:18px}
+.sub{color:var(--muted);font-size:14px;margin:0}
+.stack{display:grid;gap:14px}
+.field{display:grid;gap:6px}.field label{font-weight:600;font-size:14px}
+.inp{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:13px 14px;font-size:16px}
+.inp:focus{border-color:var(--navy-2);outline:none;box-shadow:0 0 0 3px rgba(22,74,120,.18)}
+.pwbox{position:relative}.pwbox .inp{padding-right:80px}
+.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--navy-2);font-weight:700;font-size:13px;padding:8px 10px}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-weight:700;font-size:15px;background:var(--navy);color:#fff;width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--line)}
+.btn.danger{background:var(--bad)}
+.btn.sm{width:auto;padding:9px 12px;font-size:14px;border-radius:10px}
+.link{border:0;background:none;color:var(--navy-2);font-weight:600;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.msg{border-radius:12px;padding:11px 13px;font-size:14px}
+.msg.bad{background:var(--bad-bg);color:var(--bad)}.msg.warn{background:var(--warn-bg);color:var(--warn)}.msg.ok{background:var(--ok-bg);color:var(--ok)}.msg.info{background:#e6eef6;color:var(--navy)}
+.rules{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13.5px}
+.rules li{display:flex;gap:8px;align-items:center;color:var(--muted)}
+.rules li::before{content:"";width:16px;height:16px;border-radius:50%;border:1.5px solid var(--line);flex:none}
+.rules li.ok{color:var(--ok)}.rules li.ok::before{background:var(--ok);border-color:var(--ok);box-shadow:inset 0 0 0 3px var(--card)}
+.top{background:var(--navy);color:#fff;padding:14px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+.top .who{flex:1;min-width:0}.top .who b{font-family:var(--f-display);font-size:19px;display:block;line-height:1.1}
+.top .who span{font-size:12.5px;opacity:.8;overflow-wrap:anywhere}
+.iconbtn{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:10px;width:40px;height:40px;display:grid;place-items:center;flex:none}
+.tabs{position:sticky;bottom:0;display:grid;border-top:1px solid var(--line);background:var(--card);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.tab{border:0;background:transparent;padding:10px 4px 12px;font-size:12.5px;font-weight:600;color:var(--muted);display:grid;justify-items:center;gap:3px}
+.tab[aria-current="page"]{color:var(--navy)}.tab svg{width:22px;height:22px}
+.tab[aria-current="page"] .ti{background:#dfe8f1;border-radius:20px;padding:2px 14px}
+.card{background:var(--card);border-radius:16px;border:1px solid var(--line)}
+.sect{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:4px 2px 6px}
+.row{display:flex;align-items:center;gap:12px;padding:11px 14px;width:100%;border:0;background:transparent;text-align:left;border-top:1px solid var(--paper-2)}
+.row:first-child{border-top:0}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13.5px;flex:none}
+.row .nm{flex:1;min-width:0}.row .nm b{display:block;font-size:15px}
+.row .nm small{color:var(--muted);font-size:12.5px;display:block;overflow-wrap:anywhere}
+.badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.bd{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--paper-2);color:var(--muted);white-space:nowrap}
+.bd.navy{background:var(--navy);color:#fff}.bd.blue{background:#dfe8f1;color:var(--navy)}.bd.warn{background:var(--warn-bg);color:var(--warn)}.bd.bad{background:var(--bad-bg);color:var(--bad)}.bd.ok{background:var(--ok-bg);color:var(--ok)}
+.chev{color:var(--faint)}
+.veil{position:fixed;inset:0;background:rgba(10,25,40,.42);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--paper);width:100%;max-width:520px;max-height:92%;overflow-y:auto;border-radius:22px 22px 0 0;padding:8px max(18px,env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));display:grid;gap:14px}
+.grab{width:42px;height:5px;border-radius:5px;background:var(--line);margin:4px auto 0}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 14px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:600;text-align:right;overflow-wrap:anywhere}
+.acts{display:grid;gap:8px}
+.lock{display:flex;gap:10px;align-items:flex-start;background:var(--paper-2);border-radius:12px;padding:11px 13px;font-size:14px;color:var(--muted)}
+.temp{background:var(--navy);color:#fff;border-radius:16px;padding:16px;display:grid;gap:10px;text-align:center}
+.temp .code{font-family:var(--f-mono);font-weight:700;font-size:28px;letter-spacing:.04em;user-select:all}
+.temp small{opacity:.85;font-size:13px}.temp .btn{background:#fff;color:var(--navy)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:20px;padding:8px 13px;font-weight:600;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.sw span{font-weight:600;font-size:14.5px}.sw small{display:block;color:var(--muted);font-weight:400;font-size:12.5px}
+.tg{width:48px;height:28px;border-radius:20px;border:0;background:var(--line);position:relative;flex:none}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tg[aria-checked="true"]{background:var(--ok)}.tg[aria-checked="true"]::after{left:23px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.log .it{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;padding:10px 14px;border-top:1px solid var(--paper-2);font-size:14px}
+.log .it:first-child{border-top:0}
+.log time{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding-top:2px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);width:min(492px,calc(100% - 28px));bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;border-radius:12px;padding:11px 14px;font-size:14px;z-index:30;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.day{display:grid;grid-template-columns:86px minmax(0,1fr);gap:10px;padding:10px 14px;border-top:1px solid var(--paper-2);align-items:center}
+.day:first-child{border-top:0}
+.day b{font-size:14px}.day .s{font-family:var(--f-mono);font-size:14px;font-weight:700}
+.day .s.off{font-family:var(--f-body);color:var(--muted);font-weight:600}
+.res{display:grid;gap:8px}
+.res .r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.res code{font-family:var(--f-mono);font-weight:700;font-size:16px}
+.spin{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+const SB_URL='https://fclazwcidblbyykfvuwn.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjbGF6d2NpZGJsYnl5a2Z2dXduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxODMzNzAsImV4cCI6MjEwODc1OTM3MH0.0D9JaJVkg_GCbWIfVV6Fmkci26supcsJD2fOg6XsUCk'; // chiave pubblica (anon) del progetto di PROVA
+const DOMINIO='turni.marinaportoantico.it';
+const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'turni-test-auth'}});
+
+const S={view:'loading',tab:'turni',me:null,people:[],log:[],data:null,loginMsg:null,forgot:false,boot:null,busy:false,sheet:null,toast:null,showPw:false};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+const todayISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fmtD=s=>{if(!s)return '';const [y,m,d]=s.split('-');return d+'/'+m+'/'+y};
+const DOW=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+const isMgr=u=>u&&(u.ruolo_app==='titolare'||u.ruolo_app==='manager');
+const initials=u=>{const p=u.nome.split(' ');return (p[0][0]+(p[1]?p[1][0]:p[0][1]||'')).toUpperCase()};
+const roleLbl=r=>r==='titolare'?'Titolare':r==='manager'?'Manager':'Dipendente';
+function statoOggi(u){const t=todayISO();if(u.stato==='sospeso'){if(u.sospeso_al&&u.sospeso_al<t)return 'attivo';if(u.sospeso_dal&&u.sospeso_dal>t)return 'attivo'}return u.stato}
+function puoGestire(a,t){if(!a||!t)return false;if(a.ruolo_app==='titolare')return t.user_id!==a.user_id;if(a.ruolo_app==='manager')return t.ruolo_app==='dipendente';return false}
+const emailDi=u=>{u=u.trim().toLowerCase();return u.includes('@')?u:u+'@'+DOMINIO};
+function toast(t){S.toast=t;clearTimeout(S._tt);S._tt=setTimeout(()=>{S.toast=null;render()},2800);render()}
+
+async function call(azione,payload){
+  const {data,error}=await sb.functions.invoke('gestione-accessi',{body:Object.assign({azione},payload||{})});
+  if(error){let m='Errore di collegamento. Riprova.';try{const j=await error.context.json();if(j&&j.errore)m=j.errore}catch(_){}throw new Error(m)}
+  return data;
+}
+async function rpc(fn,args){const {data,error}=await sb.rpc(fn,args);if(error)throw new Error(error.message.includes('autorizzato')?'Non hai il permesso di farlo.':error.message);return data}
+
+/* ---------- Sessione ---------- */
+async function loadMe(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){S.me=null;S.view='login';return}
+  const {data,error}=await sb.from('dipendenti').select('*').eq('user_id',session.user.id).maybeSingle();
+  if(error||!data||data.stato==='disattivato'){await sb.auth.signOut();S.me=null;S.view='login';S.loginMsg={k:'bad',t:data&&data.stato==='disattivato'?'Questo account è disattivato. Parla con Max o Gabriele.':'Il tuo accesso non è più attivo. Parla con Max o Gabriele.'};return}
+  S.me=data;S.view=data.deve_cambiare_password?'cambio':'home';
+  if(S.view==='home'){if(!isMgr(data))S.tab='turni';await loadAll()}
+}
+async function loadAll(){
+  const [p,d]=await Promise.all([sb.from('dipendenti').select('*').order('ordine'),sb.from('app_data').select('data').eq('id','marina_porto_antico').maybeSingle()]);
+  S.people=p.data||[];S.data=d.data?d.data.data:null;
+  if(isMgr(S.me)){const l=await sb.from('registro_modifiche').select('*').order('quando',{ascending:false}).limit(100);S.log=l.data||[]}
+}
+// Controllo periodico: se la password è stata reimpostata o l'accesso tolto, la sessione cade
+async function check(){
+  if(!S.me)return;
+  const {error}=await sb.auth.getUser();
+  if(error){await sb.auth.signOut();S.me=null;S.view='login';S.sheet=null;S.loginMsg={k:'warn',t:'Sei stato scollegato: la tua password è stata reimpostata o il tuo accesso è cambiato. Rientra con i dati che ti hanno dato.'};render();return}
+  const {data}=await sb.from('dipendenti').select('*').eq('user_id',S.me.user_id).maybeSingle();
+  if(!data){await sb.auth.signOut();S.me=null;S.view='login';S.loginMsg={k:'bad',t:'Il tuo accesso non è più attivo. Parla con Max o Gabriele.'};render();return}
+  const wasMgr=isMgr(S.me);S.me=data;
+  if(data.deve_cambiare_password&&S.view==='home'){S.view='cambio';S.sheet=null;render();return}
+  if(S.view==='home'&&!S.sheet){await loadAll();if(wasMgr&&!isMgr(data))S.tab='turni';render()}
+}
+setInterval(check,45000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
+
+/* ---------- Icone ---------- */
+const ico={
+  menu:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  ppl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.6c2.6.2 4.4 1.9 5 5.4"/></svg>',
+  log:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4h10a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 0-2z"/><path d="M9 9h6M9 13h6"/></svg>',
+  lock:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+  chev:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>'
+};
+
+/* ---------- Schermate ---------- */
+function vLogin(){
+  return `<div class="screen"><div class="pad stack" style="padding-top:40px;flex:1">
+    <div class="brand"><div class="mark">MPA</div><div><div class="eyebrow">Marina Porto Antico</div><b style="font-size:15px">Turni</b></div></div>
+    <h1 class="h xl" style="margin-top:18px">Accedi</h1>
+    ${S.boot===false?`<div class="msg info stack" style="gap:8px"><b>Primo avvio dell'ambiente di prova</b><span>L'account del titolare (mmax1600@gmail.com) non esiste ancora. Crealo qui: riceverai una password provvisoria.</span><button class="btn sm" data-act="boot" style="justify-self:start">Crea l'account del titolare</button></div>`:''}
+    ${S.bootPw?`<div class="temp"><small>Account del titolare creato</small><div class="code" id="tempCode">${esc(S.bootPw)}</div><small>Nome utente: <b>mmax1600@gmail.com</b><br>È provvisoria: al primo accesso ne sceglierai una tua.</small><button class="btn sm" data-act="copy" style="justify-self:center">Copia</button></div>`:''}
+    <form id="fLogin" class="stack" novalidate>
+      <div class="field"><label for="lUser">Nome utente o email</label><input class="inp" id="lUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="nome.cognome"></div>
+      <div class="field"><label for="lPw">Password</label><div class="pwbox"><input class="inp" id="lPw" type="${S.showPw?'text':'password'}" autocomplete="current-password"><button type="button" class="eye" data-act="eye">${S.showPw?'Nascondi':'Mostra'}</button></div></div>
+      ${S.loginMsg?`<div class="msg ${S.loginMsg.k}" role="alert">${S.loginMsg.t}</div>`:''}
+      <button class="btn" type="submit" ${S.busy?'disabled':''}>${S.busy?'<span class="spin"></span>':'Entra'}</button>
+    </form>
+    <div><button class="link" data-act="forgot" type="button">Password dimenticata?</button></div>
+    ${S.forgot?`<div class="msg info">Chiedi a <b>Gabriele</b> o a <b>Max</b>: ti daranno una password provvisoria. Al primo accesso ne sceglierai una nuova.</div>`:''}
+    <div style="flex:1"></div>
+    <p class="sub" style="text-align:center">Prima volta? Usa la password provvisoria che ti hanno dato.</p>
+  </div></div>`;
+}
+const rules=(pw,rep)=>[[pw.length>=8,'Almeno 8 caratteri'],[/[a-zA-Z]/.test(pw)&&/[0-9]/.test(pw),'Lettere e almeno un numero'],[!!pw&&pw===rep,'Le due password coincidono']];
+function vCambio(){
+  const u=S.me;
+  return `<div class="screen"><div class="pad stack" style="padding-top:36px">
+    <div class="eyebrow">Primo accesso</div>
+    <h1 class="h l">Ciao ${esc(u.nome_breve)}, scegli la tua password</h1>
+    <p class="sub">Quella provvisoria la conosce anche chi te l'ha data. Da adesso usi una password solo tua.</p>
+    <form id="fPw" class="stack" novalidate>
+      <div class="field"><label for="cNew">Nuova password</label><div class="pwbox"><input class="inp" id="cNew" type="${S.showPw?'text':'password'}" autocomplete="new-password"><button type="button" class="eye" data-act="eye">${S.showPw?'Nascondi':'Mostra'}</button></div></div>
+      <div class="field"><label for="cRep">Ripeti la nuova password</label><input class="inp" id="cRep" type="${S.showPw?'text':'password'}" autocomplete="new-password"></div>
+      <ul class="rules" id="cRules">${rules('','').map(([,t])=>`<li>${t}</li>`).join('')}</ul>
+      <div id="pErr"></div>
+      <button class="btn" type="submit" id="cGo" disabled>Salva ed entra</button>
+    </form>
+    <button class="link" data-act="logout" type="button" style="justify-self:start">Esci</button>
+  </div></div>`;
+}
+function vHome(){
+  const u=S.me;const mgr=isMgr(u);
+  const tabs=mgr?[['turni','Turni','cal'],['personale','Personale','ppl'],['registro','Registro','log']]:[];
+  let body=S.tab==='personale'&&mgr?vPersonale():S.tab==='registro'&&mgr?vRegistro():vTurni();
+  return `<div class="top"><div class="mark" style="background:${esc(u.colore)};width:40px;height:40px">${initials(u)}</div><div class="who"><b>${esc(u.nome_breve)}</b><span>${roleLbl(u.ruolo_app)} · ${esc(u.username)}</span></div><button class="iconbtn" data-act="menu" aria-label="Menu account">${ico.menu}</button></div>
+  <div class="screen"><div class="pad stack">${body}</div></div>
+  ${tabs.length?`<nav class="tabs" style="grid-template-columns:repeat(${tabs.length},1fr)" aria-label="Sezioni">${tabs.map(([k,l,i])=>`<button class="tab" data-tab="${k}" ${S.tab===k?'aria-current="page"':''}><span class="ti">${ico[i]}</span>${l}</button>`).join('')}</nav>`:''}`;
+}
+const label=s=>!s||s==='none'?'—':s==='riposo'?'Riposo':s==='ferie'?'Ferie':s==='permesso'?'Permesso':s==='malattia'?'Malattia':s;
+function vTurni(){
+  const u=S.me,sh=(S.data&&S.data.shifts)||{};const st=statoOggi(u);
+  let mine='';
+  if(u.nei_turni){
+    const rows=[];for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()+i);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const s=sh[k]&&sh[k][u.id]?sh[k][u.id].shift:null;const work=s&&/\d/.test(s);
+      rows.push(`<div class="day"><b>${i===0?'Oggi':DOW[d.getDay()]+' '+d.getDate()}</b><span class="s ${work?'':'off'}">${esc(label(s))}</span></div>`)}
+    mine=`<div><div class="sect">I tuoi prossimi turni</div><div class="card">${rows.join('')}</div></div>`;
+  }
+  const k=todayISO();const today=sh[k]||{};
+  const work=S.people.filter(p=>p.nei_turni&&today[p.id]&&/\d/.test(today[p.id].shift)&&statoOggi(p)!=='disattivato');
+  return `${st==='sospeso'?`<div class="msg warn">Risulti sospeso${u.sospeso_al?' fino al '+fmtD(u.sospeso_al):''}: non compari nel planner.</div>`:''}
+  ${mine}
+  <div><div class="sect">In servizio oggi · ${work.length}</div><div class="card">${work.length?work.map(p=>`<div class="day"><b>${esc(p.nome_breve)}</b><span class="s">${esc(today[p.id].shift)}</span></div>`).join(''):'<div class="day"><span class="sub">Nessun turno inserito per oggi</span></div>'}</div></div>
+  <p class="sub">I turni qui sono una copia di quelli veri, presa il 28/10. Questa app di prova serve solo per verificare accessi, password e personale.</p>`;
+}
+function personRow(u){
+  const a=S.me,st=statoOggi(u),b=[];
+  if(u.ruolo_app==='titolare')b.push('<span class="bd navy">Titolare</span>');
+  if(u.ruolo_app==='manager')b.push('<span class="bd blue">Manager</span>');
+  if(!u.user_id)b.push('<span class="bd">Senza accesso</span>');else if(u.deve_cambiare_password)b.push('<span class="bd warn">Password provvisoria</span>');
+  if(st==='sospeso')b.push(`<span class="bd warn">Sospeso${u.sospeso_al?' fino al '+fmtD(u.sospeso_al).slice(0,5):''}</span>`);
+  if(u.stato==='sospeso'&&st==='attivo')b.push(`<span class="bd">Sospensione dal ${fmtD(u.sospeso_dal).slice(0,5)}</span>`);
+  if(st==='disattivato')b.push('<span class="bd bad">Disattivato</span>');
+  if(u.user_id===a.user_id)b.push('<span class="bd ok">Sei tu</span>');
+  return `<button class="row" data-open="${esc(u.id)}"><span class="av" style="background:${esc(u.colore)};${st!=='attivo'?'opacity:.5':''}">${initials(u)}</span><span class="nm"><b>${esc(u.nome)}</b><small>${u.user_id?esc(u.username):u.username?'Nome utente previsto: '+esc(u.username):'Solo turni'}</small><span class="badges">${b.join('')}</span></span><span class="chev">${ico.chev}</span></button>`;
+}
+function mancanti(){return S.people.filter(p=>!p.user_id&&p.username&&p.stato!=='disattivato'&&puoGestire(S.me,p))}
+function vPersonale(){
+  const L=S.people,att=L.filter(u=>statoOggi(u)==='attivo'),sos=L.filter(u=>statoOggi(u)==='sospeso'),dis=L.filter(u=>statoOggi(u)==='disattivato');
+  const grp=(t,l)=>l.length?`<div><div class="sect">${t} · ${l.length}</div><div class="card">${l.map(personRow).join('')}</div></div>`:'';
+  const m=mancanti();
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h1 class="h l">Personale</h1><button class="btn sm" data-act="new">+ Nuovo</button></div>
+  ${m.length?`<div class="msg warn stack" style="gap:8px"><span><b>${m.length} ${m.length===1?'persona non ha':'persone non hanno'} ancora l'accesso</b><br>${m.map(p=>esc(p.nome_breve)).join(', ')}</span><button class="btn sm" data-act="bulk" style="justify-self:start">Crea tutti gli accessi</button></div>`:''}
+  ${grp('Attivi',att)}${grp('Sospesi',sos)}${grp('Disattivati',dis)}`;
+}
+const AZ={crea_dipendente:'ha creato',modifica_dipendente:'ha modificato',turno_fisso_si:'ha attivato il turno fisso di',turno_fisso_no:'ha tolto il turno fisso di',stato_attivo:'ha riattivato',stato_sospeso:'ha sospeso',stato_disattivato:'ha disattivato',ruolo_manager:'ha nominato manager',ruolo_dipendente:'ha tolto il ruolo manager a',crea_accesso:'ha creato l\'accesso per',reimposta_password:'ha reimpostato la password di',togli_accesso:'ha tolto l\'accesso a',primo_accesso_completato:'ha scelto la sua password personale',cambio_password:'ha cambiato la propria password'};
+function vRegistro(){
+  const nm=id=>{const p=S.people.find(x=>x.id===id);return p?p.nome_breve:id||''};
+  const self=a=>a==='primo_accesso_completato'||a==='cambio_password';
+  return `<h1 class="h l">Registro modifiche</h1><p class="sub">Chi ha fatto cosa e quando. Lo vedono solo Max e Gabriele.</p>
+  <div class="card log">${S.log.length?S.log.map(e=>{const d=new Date(e.quando);const det=e.dettagli||{};let x='';if(e.azione==='stato_sospeso')x=' dal '+fmtD(det.dal)+(det.al?' al '+fmtD(det.al):' senza data di ritorno');if(e.azione==='reimposta_password')x=' (scollegato da tutti i dispositivi)';
+    return `<div class="it"><time>${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</time><div><b>${esc(e.chi_nome||'Sistema')}</b> ${esc(AZ[e.azione]||e.azione)}${self(e.azione)?'':' '+esc(nm(e.dipendente_id))}${esc(x)}</div></div>`}).join(''):'<div class="it"><span></span><span class="sub">Nessuna modifica ancora</span></div>'}</div>`;
+}
+
+/* ---------- Fogli ---------- */
+function sheetPerson(){
+  const a=S.me,sh=S.sheet,t=S.people.find(p=>p.id===sh.id);if(!t)return '';
+  const st=statoOggi(t),can=puoGestire(a,t),self=t.user_id&&t.user_id===a.user_id;
+  let acts='';
+  if(sh.temp){
+    acts=`<div class="temp"><small>Password provvisoria per <b>${esc(t.nome_breve)}</b></small><div class="code" id="tempCode">${esc(sh.temp)}</div><small>Nome utente: <b>${esc(sh.user||t.username)}</b><br>Comunicala a voce. Chiudendo questa finestra non la vedrai più.</small><button class="btn sm" data-act="copy" style="justify-self:center">Copia</button></div><button class="btn ghost" data-act="close">Fatto</button>`;
+  }else if(sh.mode==='sosp'){
+    acts=`<div class="stack"><h3 class="h m">Sospendi ${esc(t.nome_breve)}</h3><p class="sub">Non comparirà nel planner, nella timeline Oggi e nella replica dei turni fissi. Alla data di ritorno torna attivo da solo.</p>
+     <div class="two"><div class="field"><label for="sDal">Dal</label><input class="inp" type="date" id="sDal" value="${todayISO()}"></div><div class="field"><label for="sAl">Al (facoltativo)</label><input class="inp" type="date" id="sAl"></div></div>
+     <div id="sErr"></div><button class="btn" data-act="doSosp">Sospendi</button><button class="btn ghost" data-act="back">Annulla</button></div>`;
+  }else if(sh.mode==='dis'){
+    acts=`<div class="stack"><div class="msg bad"><b>Disattivare ${esc(t.nome)}?</b><br>Non potrà più entrare nell'app e sparirà dal planner. I turni passati restano. Si può riattivare in qualsiasi momento.</div><button class="btn danger" data-act="doDis">Sì, disattiva</button><button class="btn ghost" data-act="back">Annulla</button></div>`;
+  }else if(sh.mode==='reset'){
+    acts=`<div class="stack"><div class="msg warn"><b>Reimpostare la password di ${esc(t.nome_breve)}?</b><br>La password attuale smette subito di funzionare e ${esc(t.nome_breve)} viene scollegato da tutti i telefoni. Riceverai una password provvisoria da comunicargli.</div><button class="btn" data-act="doReset">Reimposta password</button><button class="btn ghost" data-act="back">Annulla</button></div>`;
+  }else if(sh.mode==='noacc'){
+    acts=`<div class="stack"><div class="msg bad"><b>Togliere l'accesso a ${esc(t.nome_breve)}?</b><br>Non potrà più entrare nell'app e viene scollegato da tutti i telefoni. Resta nei turni come prima. Puoi ridargli l'accesso quando vuoi.</div><button class="btn danger" data-act="doNoAcc">Sì, togli l'accesso</button><button class="btn ghost" data-act="back">Annulla</button></div>`;
+  }else{
+    const A=[];
+    if(self)A.push(`<div class="lock">${ico.lock}<span>Questo è il tuo account. Per cambiare la tua password usa il menu in alto a destra.</span></div>`);
+    else if(!can)A.push(`<div class="lock">${ico.lock}<span>${t.ruolo_app==='titolare'?'Account del titolare: nessuno può modificarlo, sospenderlo o cambiargli la password dall\'app.':'Solo Max può gestire i manager.'}</span></div>`);
+    else{
+      if(st!=='disattivato'){
+        if(t.user_id)A.push(`<button class="btn" data-act="reset">Reimposta password</button>`);
+        else A.push(`<button class="btn" data-act="mkAccess">Crea accesso all'app</button>`);
+      }
+      A.push(`<div class="sw"><span>Turno fisso<small>Copiato con "Replica i turni fissi"</small></span><button class="tg" role="switch" aria-checked="${t.replicabile}" data-act="repl" aria-label="Turno fisso"></button></div>`);
+      if(st==='attivo'&&t.stato!=='sospeso')A.push(`<button class="btn ghost" data-act="sosp">Sospendi per un periodo</button>`);
+      if(t.stato==='sospeso')A.push(`<button class="btn ghost" data-act="riatt">Riattiva adesso</button>`);
+      if(st!=='disattivato')A.push(`<button class="btn ghost" data-act="dis" style="color:var(--bad)">Disattiva (ha lasciato l'azienda)</button>`);else A.push(`<button class="btn" data-act="riatt">Riattiva</button>`);
+      if(t.user_id)A.push(`<button class="btn ghost" data-act="noacc" style="color:var(--bad)">Togli accesso all'app</button>`);
+      if(a.ruolo_app==='titolare'&&t.user_id)A.push(t.ruolo_app==='manager'?`<button class="btn ghost" data-act="role" data-r="dipendente">Togli ruolo manager</button>`:`<button class="btn ghost" data-act="role" data-r="manager">Nomina manager</button>`);
+    }
+    acts=`<div class="acts">${A.join('')}</div>`;
+  }
+  const acc=!t.user_id?'Nessuno (solo turni)':t.deve_cambiare_password?'Password provvisoria, da cambiare':'Password personale';
+  return `<div class="grab"></div>
+  <div style="display:flex;gap:12px;align-items:center"><span class="av" style="background:${esc(t.colore)};width:48px;height:48px;font-size:16px">${initials(t)}</span><div style="min-width:0"><h3 class="h m">${esc(t.nome)}</h3><div class="sub">${roleLbl(t.ruolo_app)} · ${st}</div></div></div>
+  ${sh.mode||sh.temp?'':`<dl class="kv card" style="padding:12px 14px"><dt>Nome utente</dt><dd>${esc(t.username||'—')}</dd><dt>Accesso</dt><dd>${acc}</dd><dt>Mansioni</dt><dd>${t.mansioni.length?t.mansioni.map(m=>m==='cassa'?'Cassa e parcheggio':'Ormeggio').join(' + '):'—'}</dd>${t.stato==='sospeso'?`<dt>Sospensione</dt><dd>dal ${fmtD(t.sospeso_dal)}${t.sospeso_al?' al '+fmtD(t.sospeso_al):', senza data di ritorno'}</dd>`:''}</dl>`}
+  ${sh.err?`<div class="msg bad">${esc(sh.err)}</div>`:''}
+  ${acts}
+  ${sh.mode||sh.temp?'':'<button class="btn ghost" data-act="close">Chiudi</button>'}`;
+}
+function sheetNew(){
+  const a=S.me,d=S.sheet.d;const auto=norm(d.nome)+(d.cognome?'.'+norm(d.cognome):'');
+  return `<div class="grab"></div><h3 class="h m">Nuovo dipendente</h3>
+  <form id="fNew" class="stack" novalidate>
+   <div class="two"><div class="field"><label for="nNome">Nome</label><input class="inp" id="nNome" value="${esc(d.nome)}" autocomplete="off"></div><div class="field"><label for="nCogn">Cognome</label><input class="inp" id="nCogn" value="${esc(d.cognome)}" autocomplete="off"></div></div>
+   <div class="field"><label>Mansioni</label><div class="chips"><button type="button" class="chip" data-m="ormeggio" aria-pressed="${d.m.includes('ormeggio')}">Ormeggio</button><button type="button" class="chip" data-m="cassa" aria-pressed="${d.m.includes('cassa')}">Cassa e parcheggio</button></div></div>
+   <div class="sw"><span>Turno fisso<small>Copiato con "Replica i turni fissi"</small></span><button type="button" class="tg" role="switch" aria-checked="${d.repl}" data-nt="repl" aria-label="Turno fisso"></button></div>
+   <div class="sw"><span>Può accedere all'app<small>Toglilo per chi compare solo nei turni</small></span><button type="button" class="tg" role="switch" aria-checked="${d.acc}" data-nt="acc" aria-label="Può accedere all'app"></button></div>
+   ${d.acc?`<div class="field"><label for="nUser">Nome utente</label><input class="inp" id="nUser" value="${esc(d.userEdited?d.user:auto)}" autocapitalize="none" spellcheck="false"><span class="sub" style="font-size:13px">Di solito nome.cognome. Non si può cambiare dopo.</span></div>`:''}
+   ${a.ruolo_app==='titolare'&&d.acc?`<div class="field"><label>Ruolo nell'app</label><div class="chips"><button type="button" class="chip" data-r="dipendente" aria-pressed="${d.ruolo==='dipendente'}">Dipendente</button><button type="button" class="chip" data-r="manager" aria-pressed="${d.ruolo==='manager'}">Manager</button></div></div>`:a.ruolo_app==='manager'?'<p class="sub" style="font-size:13px">Come manager puoi creare solo dipendenti.</p>':''}
+   <div id="nErr">${S.sheet.err?`<div class="msg bad">${esc(S.sheet.err)}</div>`:''}</div>
+   <button class="btn" type="submit" ${S.busy?'disabled':''}>${S.busy?'<span class="spin"></span>':'Crea dipendente'}</button>
+   <button class="btn ghost" type="button" data-act="close">Annulla</button>
+  </form>`;
+}
+function sheetBulk(){
+  const sh=S.sheet;
+  if(sh.res)return `<div class="grab"></div><h3 class="h m">Accessi creati</h3><div class="msg warn">Annota o copia queste password adesso: chiudendo la finestra non si vedranno più. Ognuno al primo accesso ne sceglierà una sua.</div>
+   <div class="res">${sh.res.map(r=>`<div class="r"><div style="min-width:0"><b>${esc(r.nome)}</b><br><span class="sub" style="font-size:13px">${esc(r.username)}</span></div>${r.errore?`<span class="bd bad">${esc(r.errore)}</span>`:`<code>${esc(r.password)}</code>`}</div>`).join('')}</div>
+   <button class="btn sm ghost" data-act="copyAll" style="justify-self:start">Copia tutto</button><button class="btn" data-act="close">Fatto</button>`;
+  const m=mancanti();
+  return `<div class="grab"></div><h3 class="h m">Creare ${m.length} accessi?</h3><p class="sub">Per ognuno verrà generata una password provvisoria da comunicare a voce. Serve il giorno del passaggio alla nuova app.</p>
+   <div class="card" style="padding:4px 0">${m.map(p=>`<div class="day"><b>${esc(p.nome_breve)}</b><span class="sub">${esc(p.username)}</span></div>`).join('')}</div>
+   ${sh.err?`<div class="msg bad">${esc(sh.err)}</div>`:''}
+   <button class="btn" data-act="doBulk" ${S.busy?'disabled':''}>${S.busy?'<span class="spin"></span>':'Crea gli accessi'}</button><button class="btn ghost" data-act="close">Annulla</button>`;
+}
+function sheetMyPw(){
+  return `<div class="grab"></div><h3 class="h m">Cambia la tua password</h3>
+  <form id="fPw" class="stack" novalidate>
+   <div class="field"><label for="mCur">Password attuale</label><input class="inp" type="password" id="mCur" autocomplete="current-password"></div>
+   <div class="field"><label for="cNew">Nuova password</label><input class="inp" type="password" id="cNew" autocomplete="new-password"></div>
+   <div class="field"><label for="cRep">Ripeti la nuova password</label><input class="inp" type="password" id="cRep" autocomplete="new-password"></div>
+   <ul class="rules" id="cRules">${rules('','').map(([,t])=>`<li>${t}</li>`).join('')}</ul>
+   <div id="pErr"></div>
+   <button class="btn" type="submit" id="cGo" disabled>Salva</button>
+   <button class="btn ghost" type="button" data-act="close">Annulla</button>
+  </form>`;
+}
+function sheetMenu(){return `<div class="grab"></div><h3 class="h m">${esc(S.me.nome)}</h3><div class="acts"><button class="btn ghost" data-act="mypw">Cambia password</button><button class="btn" data-act="logout">Esci</button><button class="btn ghost" data-act="close">Chiudi</button></div>`}
+
+/* ---------- Render ---------- */
+function render(){
+  const app=document.getElementById('app');
+  let h='<div class="testbar">Ambiente di prova · dati non reali</div>';
+  if(S.view==='loading')h+='<div class="screen"><div class="pad"><p class="sub">Caricamento…</p></div></div>';
+  else if(S.view==='login')h+=vLogin();else if(S.view==='cambio')h+=vCambio();else h+=vHome();
+  if(S.sheet){const k=S.sheet.k;const inner=k==='person'?sheetPerson():k==='new'?sheetNew():k==='bulk'?sheetBulk():k==='mypw'?sheetMyPw():sheetMenu();
+    h+=`<div class="veil" data-veil><div class="sheet" role="dialog" aria-modal="true">${inner}</div></div>`}
+  if(S.toast)h+=`<div class="toast" role="status">${esc(S.toast)}</div>`;
+  const keep={u:document.getElementById('lUser')?.value,p:document.getElementById('lPw')?.value};
+  app.innerHTML=h;bind(keep);
+}
+function bind(keep){
+  const fl=document.getElementById('fLogin');
+  if(fl){if(keep.u)document.getElementById('lUser').value=keep.u;if(keep.p)document.getElementById('lPw').value=keep.p;fl.onsubmit=e=>{e.preventDefault();login()}}
+  const fp=document.getElementById('fPw');
+  if(fp){const n=document.getElementById('cNew'),r=document.getElementById('cRep'),ul=document.getElementById('cRules'),go=document.getElementById('cGo');
+    const upd=()=>{const rs=rules(n.value,r.value);ul.innerHTML=rs.map(([ok,t])=>`<li class="${ok?'ok':''}">${t}</li>`).join('');go.disabled=!rs.every(x=>x[0])};n.oninput=upd;r.oninput=upd;
+    fp.onsubmit=async e=>{e.preventDefault();go.disabled=true;go.innerHTML='<span class="spin"></span>';
+      try{const cur=document.getElementById('mCur');await call('cambia_password',{nuova:n.value,attuale:cur?cur.value:undefined});
+        if(S.view==='cambio'){S.view='home';S.me.deve_cambiare_password=false;S.showPw=false;await loadAll();toast('Password salvata. Benvenuto!')}else{S.sheet=null;toast('Password cambiata')}}
+      catch(err){document.getElementById('pErr').innerHTML=`<div class="msg bad">${esc(err.message)}</div>`;go.disabled=false;go.textContent=S.view==='cambio'?'Salva ed entra':'Salva'}}}
+  const fn=document.getElementById('fNew');
+  if(fn){const d=S.sheet.d;
+    ['nNome','nCogn'].forEach(i=>document.getElementById(i).addEventListener('input',()=>{d.nome=document.getElementById('nNome').value;d.cognome=document.getElementById('nCogn').value;const nu=document.getElementById('nUser');if(nu&&!d.userEdited)nu.value=norm(d.nome)+(d.cognome?'.'+norm(d.cognome):'')}));
+    const nu=document.getElementById('nUser');if(nu)nu.addEventListener('input',()=>{d.userEdited=true;d.user=nu.value});
+    fn.onsubmit=e=>{e.preventDefault();snapNew();createNew()}}
+}
+function snapNew(){const d=S.sheet.d;const n=document.getElementById('nNome'),c=document.getElementById('nCogn'),u=document.getElementById('nUser');if(n)d.nome=n.value;if(c)d.cognome=c.value;if(u&&d.userEdited)d.user=u.value}
+
+async function login(){
+  const user=document.getElementById('lUser').value,pw=document.getElementById('lPw').value;
+  if(!user.trim()||!pw){S.loginMsg={k:'bad',t:'Scrivi nome utente e password.'};return render()}
+  S.busy=true;S.loginMsg=null;render();
+  const {error}=await sb.auth.signInWithPassword({email:emailDi(user),password:pw});
+  S.busy=false;
+  if(error){
+    const c=(error.code||'')+' '+(error.message||'');
+    if(/banned/i.test(c))S.loginMsg={k:'bad',t:'Questo account è disattivato. Parla con Max o Gabriele.'};
+    else if(/rate|too many|429/i.test(c)||error.status===429)S.loginMsg={k:'warn',t:'Troppi tentativi. Per sicurezza aspetta qualche minuto e riprova.'};
+    else S.loginMsg={k:'bad',t:'Nome utente o password non corretti. Se l\'hai dimenticata, chiedi a Gabriele o a Max.'};
+    return render();
+  }
+  S.forgot=false;S.showPw=false;S.bootPw=null;S.tab='turni';
+  await loadMe();if(S.me&&isMgr(S.me)&&S.view==='home')S.tab='personale';render();
+}
+async function createNew(){
+  const a=S.me,d=S.sheet.d,nome=d.nome.trim(),cogn=d.cognome.trim();
+  const err=m=>{S.sheet.err=m;S.busy=false;render()};
+  if(!nome)return err('Scrivi almeno il nome.');if(!d.m.length)return err('Scegli almeno una mansione.');
+  let user=null;
+  if(d.acc){user=(d.userEdited?d.user:norm(nome)+(cogn?'.'+norm(cogn):'')).trim().toLowerCase();
+    if(!/^[a-z0-9]+(\.[a-z0-9]+)*$/.test(user))return err('Il nome utente può contenere solo lettere minuscole, numeri e punti (es. mario.rossi).');
+    if(S.people.some(p=>p.username===user))return err('Il nome utente '+user+' esiste già.');}
+  let id=norm(nome+cogn)||'dip';while(S.people.some(p=>p.id===id))id+='x';
+  const COL=['#0369a1','#0b5f99','#16803c','#d97706','#7c3aed','#dc2626','#2563eb','#0891b2','#be185d','#475569','#0f766e','#9333ea'];
+  S.busy=true;S.sheet.err=null;render();
+  try{
+    await rpc('salva_dipendente',{p_id:id,p_nome:(nome+' '+cogn).trim(),p_nome_breve:nome,p_mansioni:d.m,p_colore:COL[S.people.length%COL.length],p_replicabile:d.repl,p_username:user,p_ruolo:a.ruolo_app==='titolare'&&d.acc?d.ruolo:'dipendente'});
+    let r=null;if(d.acc)r=await call('crea_accesso',{dipendente_id:id});
+    await loadAll();S.busy=false;
+    if(r){S.sheet={k:'person',id,temp:r.password,user:r.username}}else{S.sheet=null;toast(nome+' aggiunto ai turni')}
+    render();
+  }catch(e){await loadAll();err(e.message)}
+}
+async function act(fn){const sh=S.sheet;try{S.busy=true;await fn();S.busy=false;await loadAll();render()}catch(e){S.busy=false;if(sh){sh.err=e.message;delete sh.mode}await loadAll();render()}}
+
+document.addEventListener('click',async e=>{
+  if(e.target.matches('[data-veil]')){S.sheet=null;return render()}
+  const tab=e.target.closest('[data-tab]');if(tab){S.tab=tab.dataset.tab;await loadAll();window.scrollTo(0,0);return render()}
+  const op=e.target.closest('[data-open]');if(op){S.sheet={k:'person',id:op.dataset.open};return render()}
+  const m=e.target.closest('[data-m]');if(m&&S.sheet?.k==='new'){snapNew();const d=S.sheet.d;d.m=d.m.includes(m.dataset.m)?d.m.filter(x=>x!==m.dataset.m):d.m.concat(m.dataset.m);return render()}
+  const r=e.target.closest('[data-r]');if(r&&S.sheet?.k==='new'){snapNew();S.sheet.d.ruolo=r.dataset.r;return render()}
+  const nt=e.target.closest('[data-nt]');if(nt){snapNew();const d=S.sheet.d;d[nt.dataset.nt]=!d[nt.dataset.nt];return render()}
+  const b=e.target.closest('[data-act]');if(!b||S.busy)return;
+  const a=b.dataset.act,sh=S.sheet,t=sh&&sh.id?S.people.find(p=>p.id===sh.id):null;
+  if(sh)sh.err=null;
+  switch(a){
+    case 'eye':S.showPw=!S.showPw;render();break;
+    case 'forgot':S.forgot=!S.forgot;render();break;
+    case 'boot':try{const r=await call('primo_avvio');S.bootPw=r.password;S.boot=true;document.getElementById('lUser').value='mmax1600@gmail.com';render()}catch(err){S.loginMsg={k:'bad',t:err.message};render()}break;
+    case 'logout':await sb.auth.signOut();S.me=null;S.view='login';S.sheet=null;S.showPw=false;S.loginMsg=null;render();break;
+    case 'menu':S.sheet={k:'menu'};render();break;
+    case 'mypw':S.sheet={k:'mypw'};render();break;
+    case 'close':S.sheet=null;render();break;
+    case 'back':delete sh.mode;render();break;
+    case 'new':S.sheet={k:'new',d:{nome:'',cognome:'',m:['ormeggio'],repl:true,acc:true,ruolo:'dipendente',user:'',userEdited:false}};render();break;
+    case 'bulk':S.sheet={k:'bulk'};render();break;
+    case 'doBulk':S.busy=true;render();try{const r=await call('crea_accessi_mancanti');S.busy=false;sh.res=r.risultati;await loadAll();render()}catch(err){S.busy=false;sh.err=err.message;render()}break;
+    case 'copy':copyText(document.getElementById('tempCode').textContent);break;
+    case 'copyAll':copyText(sh.res.filter(x=>!x.errore).map(x=>x.nome+' – '+x.username+' – '+x.password).join('\n'));break;
+    case 'reset':case 'sosp':case 'dis':case 'noacc':sh.mode={reset:'reset',sosp:'sosp',dis:'dis',noacc:'noacc'}[a];render();break;
+    case 'doReset':act(async()=>{const r=await call('reimposta_password',{dipendente_id:t.id});delete sh.mode;sh.temp=r.password;sh.user=r.username});break;
+    case 'mkAccess':act(async()=>{const r=await call('crea_accesso',{dipendente_id:t.id});sh.temp=r.password;sh.user=r.username});break;
+    case 'doNoAcc':act(async()=>{await call('togli_accesso',{dipendente_id:t.id});delete sh.mode;toast('Accesso tolto a '+t.nome_breve)});break;
+    case 'repl':act(async()=>{await rpc('imposta_turno_fisso',{p_id:t.id,p_valore:!t.replicabile})});break;
+    case 'doSosp':{const dal=document.getElementById('sDal').value,al=document.getElementById('sAl').value;if(!dal){document.getElementById('sErr').innerHTML='<div class="msg bad">Indica da quando.</div>';return}if(al&&al<dal){document.getElementById('sErr').innerHTML='<div class="msg bad">La data di ritorno è prima dell\'inizio.</div>';return}
+      act(async()=>{await call('imposta_stato',{dipendente_id:t.id,stato:'sospeso',dal,al:al||null});S.sheet=null;toast(t.nome_breve+' sospeso')})}break;
+    case 'riatt':act(async()=>{await call('imposta_stato',{dipendente_id:t.id,stato:'attivo'});S.sheet=null;toast(t.nome_breve+' di nuovo attivo')});break;
+    case 'doDis':act(async()=>{await call('imposta_stato',{dipendente_id:t.id,stato:'disattivato'});S.sheet=null;toast(t.nome_breve+' disattivato')});break;
+    case 'role':act(async()=>{await rpc('imposta_ruolo',{p_id:t.id,p_ruolo:b.dataset.r});toast(b.dataset.r==='manager'?t.nome_breve+' ora è manager':t.nome_breve+' non è più manager')});break;
+  }
+});
+function copyText(txt){const ok=()=>toast('Copiato');try{navigator.clipboard.writeText(txt).then(ok,()=>toast('Seleziona il testo e copialo a mano'))}catch(_){toast('Seleziona il testo e copialo a mano')}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet){S.sheet=null;render()}});
+
+(async()=>{
+  render();
+  try{const r=await call('stato_avvio');S.boot=r.titolare_pronto}catch(_){S.boot=null}
+  await loadMe();render();
+})();
+})();
+</script>
+</body>
+</html>
